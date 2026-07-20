@@ -69,7 +69,8 @@ def rental_days(from_date, to_date):
 
     TODO (Task 1): implement.
     """
-    raise NotImplementedError
+    gap = (to_date - from_date).days
+    return gap + 1  # inclusive of both start and end dates
 
 
 def dates_overlap(start_a, end_a, start_b, end_b):
@@ -78,8 +79,13 @@ def dates_overlap(start_a, end_a, start_b, end_b):
 
     TODO (Task 1): implement.
     """
-    raise NotImplementedError
-
+    if end_a == start_b or end_b == start_a: # for the same-day turnover rule
+        return False 
+    
+    if start_a <= end_b and start_b <= end_a: # for the overlapping dates rule
+        return True # if there is overlap
+    else:
+        return False # if no overlap
 
 def find_conflicting_booking(equipment_id, from_date, to_date, bookings):
     """Return an existing, non-cancelled booking for this equipment that
@@ -87,7 +93,21 @@ def find_conflicting_booking(equipment_id, from_date, to_date, bookings):
 
     TODO (Task 1): implement.
     """
-    raise NotImplementedError
+    for booking in bookings:
+        if booking["equipment_id"] != equipment_id: # if the booking has a different equipment
+            continue
+
+        if booking["status"] == "cancelled": # if the booking is cancelled, no conflict
+            continue
+
+        existing_from = parse_date(booking["from_date"])
+        existing_to = parse_date(booking["to_date"]) 
+        # if same equipment and not cancelled, check conflict
+
+        if dates_overlap(existing_from, existing_to, from_date, to_date): # if there is conflict
+            return booking
+        
+    return None
 
 
 def calculate_total(daily_rate, days):
