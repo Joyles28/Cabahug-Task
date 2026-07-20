@@ -116,8 +116,10 @@ def calculate_total(daily_rate, days):
 
     TODO (Task 2): implement.
     """
-    raise NotImplementedError
-
+    total = days * daily_rate
+    if days >= 7:
+        total = total - (total * 0.1)
+    return total
 
 # ---------------------------------------------------------------------------
 # API
