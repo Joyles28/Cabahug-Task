@@ -121,6 +121,9 @@ def calculate_total(daily_rate, days):
         total = total - (total * 0.1)
     return total
 
+def is_equipment_in_maintenance(equipment): # for maintenance status
+    return equipment["status"] == "maintenance"
+
 # ---------------------------------------------------------------------------
 # API
 # ---------------------------------------------------------------------------
@@ -132,7 +135,11 @@ def index():
 
 @app.route("/api/equipment")
 def list_equipment():
-    return jsonify(EQUIPMENT)
+    usable_equipment = []
+    for item in EQUIPMENT:
+        if not is_equipment_in_maintenance(item):
+            usable_equipment.append(item)
+    return jsonify(usable_equipment)
 
 
 @app.route("/api/bookings")
@@ -149,7 +156,7 @@ def availability():
     available = []
     for item in EQUIPMENT:
         conflict = find_conflicting_booking(item["id"], from_date, to_date, bookings)
-        if conflict is None:
+        if not is_equipment_in_maintenance(item) and conflict is None:
             available.append(item)
     return jsonify(available)
 
@@ -161,6 +168,9 @@ def create_booking():
     equipment = get_equipment(data.get("equipment_id"))
     if equipment is None:
         return jsonify({"error": "Unknown equipment"}), 400
+
+    if is_equipment_in_maintenance(equipment):
+        return jsonify({"error": f"{equipment['name']} is currently under maintenance"}), 409
 
     from_date = parse_date(data["from_date"])
     to_date = parse_date(data["to_date"])
